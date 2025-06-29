@@ -218,11 +218,6 @@ def place_order() -> str:
     return f"🎉 Order placed! Total was ₹{total}."
 
 def rag_qa(query: str) -> str:
-    """
-    Uses the RAG chain to answer arbitrary product questions.
-    Input: any natural-language question about products.
-    """
-    # ConversationalRetrievalChain.invoke wants a dict with “question”
     result = conversational_chain.invoke({"question": query})
     # extract the answer
     if isinstance(result, dict) and "answer" in result:
