@@ -16,91 +16,91 @@ from bson.errors import InvalidId
 from streamlit_mic_recorder import speech_to_text
 from gtts import gTTS
 import io
-
+import base64
 # Load environment variables
 load_dotenv()
 
 # Custom CSS for fixed bottom chat input and voice integration
-st.markdown("""
-<style>
-/* Fixed bottom container styling */
-.fixed-chat-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid #e0e0e0;
-    padding: 15px 20px;
-    z-index: 999;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-}
+# st.markdown("""
+# <style>
+# /* Fixed bottom container styling */
+# .fixed-chat-container {
+#     position: fixed;
+#     bottom: 0;
+#     left: 0;
+#     right: 0;
+#     background: rgba(255, 255, 255, 0.95);
+#     backdrop-filter: blur(10px);
+#     border-top: 1px solid #e0e0e0;
+#     padding: 15px 20px;
+#     z-index: 999;
+#     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+# }
 
-/* Chat input styling */
-.chat-input-container {
-    display: flex;
-    align-items: center;
-    max-width: 800px;
-    margin: 0 auto;
-    background: #f8f9fa;
-    border-radius: 25px;
-    padding: 8px 15px;
-    border: 2px solid #e9ecef;
-    transition: border-color 0.2s ease;
-}
+# /* Chat input styling */
+# .chat-input-container {
+#     display: flex;
+#     align-items: center;
+#     max-width: 800px;
+#     margin: 0 auto;
+#     background: #f8f9fa;
+#     border-radius: 25px;
+#     padding: 8px 15px;
+#     border: 2px solid #e9ecef;
+#     transition: border-color 0.2s ease;
+# }
 
-.chat-input-container:focus-within {
-    border-color: #007bff;
-}
+# .chat-input-container:focus-within {
+#     border-color: #007bff;
+# }
 
-/* Voice button styling */
-.voice-button {
-    background: none;
-    border: none;
-    padding: 8px;
-    margin-right: 10px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+# /* Voice button styling */
+# .voice-button {
+#     background: none;
+#     border: none;
+#     padding: 8px;
+#     margin-right: 10px;
+#     border-radius: 50%;
+#     cursor: pointer;
+#     transition: all 0.2s ease;
+#     display: flex;
+#     align-items: center;
+#     justify-content: center;
+# }
 
-.voice-button:hover {
-    background: #e9ecef;
-}
+# .voice-button:hover {
+#     background: #e9ecef;
+# }
 
-.voice-button.recording {
-    background: #ff4444;
-    color: white;
-    animation: pulse 1.5s infinite;
-}
+# .voice-button.recording {
+#     background: #ff4444;
+#     color: white;
+#     animation: pulse 1.5s infinite;
+# }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
+# @keyframes pulse {
+#     0% { transform: scale(1); }
+#     50% { transform: scale(1.1); }
+#     100% { transform: scale(1); }
+# }
 
-/* Add bottom margin to main content to avoid overlap */
-.main .block-container {
-    padding-bottom: 120px;
-}
+# /* Add bottom margin to main content to avoid overlap */
+# .main .block-container {
+#     padding-bottom: 120px;
+# }
 
-/* Ensure chat messages are scrollable */
-div[data-testid="stVerticalBlock"] {
-    max-height: calc(100vh - 200px);
-    overflow-y: auto;
-}
+# /* Ensure chat messages are scrollable */
+# div[data-testid="stVerticalBlock"] {
+#     max-height: calc(100vh - 200px);
+#     overflow-y: auto;
+# }
 
-/* Style for better chat appearance */
-div[data-testid="chatMessage"] {
-    margin-bottom: 1rem;
-}
-</style>
-""", unsafe_allow_html=True)
+# /* Style for better chat appearance */
+# div[data-testid="chatMessage"] {
+#     margin-bottom: 1rem;
+# }
+# </style>
+# """, unsafe_allow_html=True)
 
 # Page configuration
 st.set_page_config(
@@ -296,15 +296,15 @@ def rag_qa(query: str) -> str:
 def init_agent():
     tools = [
         Tool(name="add_to_cart", func=add_to_cart_tool, 
-             description="Add product to cart. Input: 'product_name, quantity'"),
+            description="Add product to cart. Input: 'product_name, quantity'"),
         Tool(name="show_cart", func=lambda _: show_cart(),
-             description="Display cart contents"),
+            description="Display cart contents"),
         Tool(name="place_order", func=lambda _: place_order(),
-             description="Place order for cart items"),
+            description="Place order for cart items"),
         Tool(name="product_qa", func=rag_qa,
-             description="Answer product questions"),
+            description="Answer product questions"),
         Tool(name="remove_from_cart", func=remove_from_cart_tool,
-             description="Remove from cart. Input: 'product_name/id, quantity'")
+            description="Remove from cart. Input: 'product_name/id, quantity'")
     ]
     
     agent = initialize_agent(
@@ -374,8 +374,8 @@ def process_message(prompt):
     except Exception as e:
         response = f"I encountered an error: {str(e)}"
     
-    st.session_state.messages.append({"role": "assistant", "content": response})
-    save_message_to_db(st.session_state.session_id, response, "assistant")
+    st.session_state.messages.append({"role": "assistant", "content": response.removesuffix("```")})
+    save_message_to_db(st.session_state.session_id, response.removesuffix("```"), "assistant")
 
 with st.sidebar:
     st.title("🛒 Product Chat")
@@ -402,7 +402,7 @@ with st.sidebar:
                 history = get_chat_history(session_id)
                 
                 # Rebuild messages for display
-                st.session_state.messages = []
+                st.session_state.messages = []  
                 for item in history:
                     if item["sender"] == "user":
                         st.session_state.messages.append({"role": "user", "content": item["message"]})
@@ -416,17 +416,26 @@ with st.sidebar:
 st.title("🛒 E-commerce Assistant")
 st.markdown("Ask me about products, get recommendations, or explore product details!")
 
-# Chat messages display
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
-        # Add text-to-speech button for assistant messages
+        # Add text-to-speech autoplay for assistant messages
         if message["role"] == "assistant":
-            if st.button("🔊", key=f"tts_{i}", help="Listen to this response"):
+            if st.button("🔊", key=f"tts_{i}"):
                 audio_data = text_to_speech(message["content"])
                 if audio_data:
-                    st.audio(audio_data, format="audio/mp3")
+                    # Read and Base64‑encode the MP3 bytes
+                    audio_bytes = audio_data.read()
+                    b64 = base64.b64encode(audio_bytes).decode()
+                    # Inject hidden autoplaying audio element
+                    st.markdown(
+                        f"""
+                        <audio autoplay style="display:none" src="data:audio/mp3;base64,{b64}"></audio>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
 
 # Enhanced voice-integrated chat input using st._bottom container
 with st._bottom:
@@ -443,7 +452,7 @@ with st._bottom:
             stop_prompt="⏹️",
             just_once=True,
             use_container_width=True,
-            key="voice_input_integrated"
+            key="voice_input"
         )
     
     with col2:
