@@ -20,89 +20,6 @@ import base64
 # Load environment variables
 load_dotenv()
 
-# Custom CSS for fixed bottom chat input and voice integration
-# st.markdown("""
-# <style>
-# /* Fixed bottom container styling */
-# .fixed-chat-container {
-#     position: fixed;
-#     bottom: 0;
-#     left: 0;
-#     right: 0;
-#     background: rgba(255, 255, 255, 0.95);
-#     backdrop-filter: blur(10px);
-#     border-top: 1px solid #e0e0e0;
-#     padding: 15px 20px;
-#     z-index: 999;
-#     box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-# }
-
-# /* Chat input styling */
-# .chat-input-container {
-#     display: flex;
-#     align-items: center;
-#     max-width: 800px;
-#     margin: 0 auto;
-#     background: #f8f9fa;
-#     border-radius: 25px;
-#     padding: 8px 15px;
-#     border: 2px solid #e9ecef;
-#     transition: border-color 0.2s ease;
-# }
-
-# .chat-input-container:focus-within {
-#     border-color: #007bff;
-# }
-
-# /* Voice button styling */
-# .voice-button {
-#     background: none;
-#     border: none;
-#     padding: 8px;
-#     margin-right: 10px;
-#     border-radius: 50%;
-#     cursor: pointer;
-#     transition: all 0.2s ease;
-#     display: flex;
-#     align-items: center;
-#     justify-content: center;
-# }
-
-# .voice-button:hover {
-#     background: #e9ecef;
-# }
-
-# .voice-button.recording {
-#     background: #ff4444;
-#     color: white;
-#     animation: pulse 1.5s infinite;
-# }
-
-# @keyframes pulse {
-#     0% { transform: scale(1); }
-#     50% { transform: scale(1.1); }
-#     100% { transform: scale(1); }
-# }
-
-# /* Add bottom margin to main content to avoid overlap */
-# .main .block-container {
-#     padding-bottom: 120px;
-# }
-
-# /* Ensure chat messages are scrollable */
-# div[data-testid="stVerticalBlock"] {
-#     max-height: calc(100vh - 200px);
-#     overflow-y: auto;
-# }
-
-# /* Style for better chat appearance */
-# div[data-testid="chatMessage"] {
-#     margin-bottom: 1rem;
-# }
-# </style>
-# """, unsafe_allow_html=True)
-
-# Page configuration
 st.set_page_config(
     page_title="E-commerce Chatbot",
     page_icon="🛒",
@@ -413,8 +330,22 @@ with st.sidebar:
         st.info("No previous chats found")
 
 # Main chat interface
-st.title("🛒 E-commerce Assistant")
-st.markdown("Ask me about products, get recommendations, or explore product details!")
+# Create two columns
+with open("logo.png", "rb") as img_file:
+    b64 = base64.b64encode(img_file.read()).decode()
+st.markdown(
+    f"""
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <img src="data:image/png;base64,{b64}" width="50" />
+      <h1 style="margin: 0; line-height: 1;">Pro-Talk</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+st.markdown(
+    "Ask me about products, get recommendations, or explore product details!"
+
+)
 
 for i, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
